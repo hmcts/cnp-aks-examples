@@ -1,0 +1,22 @@
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: servicebus-service-instance
+  namespace: rhubarb
+spec:
+  clusterServiceClassExternalName: azure-servicebus
+  clusterServicePlanExternalName: premium
+  parameters:
+    location: 'uksouth'
+    resourceGroup: 'timw-aks-rg'
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: servicebus-binding
+  namespace: rhubarb
+spec:
+  instanceRef:
+    name: servicebus-service-instance
+  secretName: servicebus-secret

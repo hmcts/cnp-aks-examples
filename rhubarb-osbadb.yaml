@@ -1,0 +1,81 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rhubarb-backend
+  namespace: rhubarb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rhubarb-backend
+  template:
+    metadata:
+      labels:
+        app: rhubarb-backend
+    spec:
+      containers:
+      - image: hmctssandbox.azurecr.io/hmcts/custard-recipe-backend
+        name: rhubarb-backend
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              secretKeyRef:
+                name: postgres-rdbms-secret
+                key: host
+          - name: POSTGRES_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-rdbms-secret
+                key: database
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-rdbms-secret
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-rdbms-secret
+                key: password
+
+        # These may be adjusted, but be mindful please
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "2500m"
+
+        # This is the port your process is listening on in the container
+        ports:
+        - containerPort: 4550
+          name: http
+        imagePullPolicy: Always
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: postgres-service-rdbms-instance
+  namespace: rhubarb
+spec:
+  clusterServiceClassExternalName: azure-postgresql-9-6
+  clusterServicePlanExternalName: general-purpose
+  parameters:
+    location: uksouth
+    resourceGroup: timw-aks-rg
+    cores: 2
+    storage: 50
+    tags:
+      Team Name: CNP
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: postgres-rdbms-binding
+  namespace: rhubarb
+spec:
+  instanceRef:
+    name: postgres-service-rdbms-instance
+  secretName: postgres-rdbms-secret
