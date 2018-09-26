@@ -1,0 +1,126 @@
+#
+# Shared Config
+#
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+  namespace: cnp
+data:
+  POSTGRES_USER: rhubarbuser
+  POSTGRES_PASSWORD: rhubarbpassword
+---
+#
+# Rhubarb Config
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhubarb-config
+  namespace: cnp
+data:
+  POSTGRES_HOST: postgres-service
+  POSTGRES_DATABASE: rhubarbdb
+  POSTGRES_SSL_MODE: disable
+---
+#
+# Postgres Config
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: cnp
+data:
+  POSTGRES_DB: rhubarbdb
+---
+#
+# Rhubarb
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rhubarb-backend
+  namespace: cnp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rhubarb-backend
+  template:
+    metadata:
+      labels:
+        app: rhubarb-backend
+    spec:
+      containers:
+      - image: hmctssandbox.azurecr.io/hmcts/custard-recipe-backend
+        name: rhubarb-backend
+        envFrom:
+          - configMapRef:
+              name: shared-config
+          - configMapRef:
+              name: rhubarb-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "2500m"
+        imagePullPolicy: Always
+---
+#
+# Postgres
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rhubarb-postgres
+  namespace: cnp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rhubarb-backend
+  template:
+    metadata:
+      labels:
+        app: rhubarb-backend
+    spec:
+      containers:
+      - image: postgres:10-alpine
+        name: rhubarb-postgres
+        envFrom:
+          - configMapRef:
+              name: shared-config
+          - configMapRef:
+              name: postgres-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
+            name: postgres
+---
+#
+# Expose database as internal (to cluster) service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: cnp
+  labels:
+    app: rhubarb-backend
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: rhubarb-backend
+  clusterIP: None

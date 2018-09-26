@@ -1,0 +1,17 @@
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: postgres-service-rdbms-instance
+  namespace: rhubarb
+spec:
+  clusterServiceClassExternalName: azure-postgresql-9-6-dbms
+  clusterServicePlanExternalName: general-purpose
+  parameters:
+    location: uksouth
+    resourceGroup: timw-aks-rg
+    alias: timw-osba-rdbms-sandbox
+    cores: 2
+    storage: 50
+    tags:
+      Team Name: CNP
