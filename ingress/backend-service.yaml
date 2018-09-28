@@ -1,0 +1,129 @@
+---
+#
+# Shared Config
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+  namespace: cnp
+data:
+  POSTGRES_USER: rhubarbuser
+  POSTGRES_PASSWORD: rhubarbpassword
+---
+#
+# Rhubarb Config
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhubarb-config
+  namespace: cnp
+data:
+  POSTGRES_HOST: localhost
+  POSTGRES_DATABASE: rhubarbdb
+  POSTGRES_SSL_MODE: disable
+---
+#
+# Postgres Config
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: cnp
+data:
+  POSTGRES_DB: rhubarbdb
+---
+#
+# Rhubarb + Postgres in the same pod
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rhubarb-backend
+  namespace: cnp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rhubarb-backend
+  template:
+    metadata:
+      labels:
+        app: rhubarb-backend
+    spec:
+      containers:
+      - image: postgres:10-alpine
+        name: rhubarb-postgres
+        envFrom:
+          - configMapRef:
+              name: shared-config
+          - configMapRef:
+              name: postgres-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        imagePullPolicy: Always
+      - image: hmctssandbox.azurecr.io/hmcts/custard-recipe-backend
+        name: rhubarb-backend
+        envFrom:
+          - configMapRef:
+              name: shared-config
+          - configMapRef:
+              name: rhubarb-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "2500m"
+        ports:
+        - containerPort: 4550
+          name: http
+        imagePullPolicy: Always
+---
+#
+# Rhubarb Service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: rhubarb-backend-service
+  namespace: cnp
+  labels:
+    app: rhubarb-backend
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4550
+  selector:
+    app: rhubarb-backend
+---
+#
+# Ingress
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rhubarb-backend-ingress
+  namespace: cnp
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /rhubarb-backend
+        backend:
+          serviceName: rhubarb-backend-service
+          servicePort: 80

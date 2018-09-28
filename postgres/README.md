@@ -19,6 +19,10 @@ spring:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_SSL_MODE:require}
     ...
 ```
+## Postgres Hostname
+Note that in example #1 the value of `POSTGRES_HOST` is `localhost`.  This is because the application and the database are running in the same pod.  All containers in a pod share the same network interface.
+
+In example number #2 the value of `POSTGRES_HOST` is `postgres-service`, which is the `name` of the service resource defined in the YAML file.
 
 ## Resource Limits
 The values in the examples are a guess, but seem reasonable.  Please use them, and if they aren't sufficient feel free to adjust.
