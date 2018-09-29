@@ -6,6 +6,8 @@ rbac:
   enabled: true
 dashboard:
   enabled: true
-  domain: traefik.hmcts.net
+  domain: aks-internal.hmcts.net
+ssl:
+  enabled: true
 
       

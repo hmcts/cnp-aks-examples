@@ -49,3 +49,30 @@ spec:
           serviceName: rhubarb-backend-service
           servicePort: 80
 ```
+
+### HTTPS
+TLS is enabled in the `values.yaml` file.  To use, just add the certificate and private key as a secret in the same namespace as the ingress:
+```
+kubectl -n cnp create secret tls traefik-tls-cert --key=tls.key --cert=tls.crt
+```
+The secret is then referenced in the ingress configuration:
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rhubarb-backend-ingress
+  namespace: cnp
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: aks-internal.hmcts.net
+    http:
+      paths:
+      - path: /rhubarb-backend
+        backend:
+          serviceName: rhubarb-backend-service
+          servicePort: 80
+  tls:
+   - secretName: traefik-tls-cert
+```
