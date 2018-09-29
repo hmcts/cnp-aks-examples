@@ -3,8 +3,6 @@
 ```
 helm install --name traefik-1 --namespace kube-system --values values.yaml stable/traefik
 ```
-## Load Balancer IP
-I can't get it to use the specified IP address in `values.yaml`.  However Azure seems to assign an IP and it still works.
 
 ## Dashboard
 The hostname of the dashboard is set in `values.yaml`.

@@ -1,5 +1,5 @@
+loadBalancerIP: 10.96.11.1
 service:
-  loadBalancerIP: 10.96.8.1
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 rbac:
