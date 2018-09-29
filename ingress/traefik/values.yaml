@@ -1,0 +1,11 @@
+service:
+  loadBalancerIP: 10.96.8.1
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+rbac:
+  enabled: true
+dashboard:
+  enabled: true
+  domain: traefik.hmcts.net
+
+      
