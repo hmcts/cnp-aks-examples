@@ -119,7 +119,7 @@ metadata:
     traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: aks-internal.hmcts.net
+  - host: aks-internal.service.core-compute-saat.internal
     http:
       paths:
       - path: /rhubarb-backend

@@ -1,0 +1,13 @@
+imageTag: latest
+service:
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+rbac:
+  enabled: true
+dashboard:
+  enabled: true
+  domain: traefik.service.core-compute-saat.internal
+ssl:
+  enabled: true
+
+      
