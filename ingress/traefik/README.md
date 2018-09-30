@@ -20,7 +20,7 @@ metadata:
   namespace: cnp
 spec:
   rules:
-  - host: backend-service.hmcts.net
+  - host: backend-service.aks-internal.hmcts.net
     http:
       paths:
       - path: /
