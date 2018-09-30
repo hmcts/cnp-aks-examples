@@ -115,6 +115,8 @@ kind: Ingress
 metadata:
   name: rhubarb-backend-ingress
   namespace: cnp
+  annotations:
+    kubernetes.io/ingress.class: traefik
 spec:
   rules:
   - host: rhubarb-backend.aks-internal.hmcts.net

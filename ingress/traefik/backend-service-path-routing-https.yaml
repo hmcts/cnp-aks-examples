@@ -116,6 +116,7 @@ metadata:
   name: rhubarb-backend-ingress
   namespace: cnp
   annotations:
+    kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
