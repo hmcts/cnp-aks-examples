@@ -117,7 +117,7 @@ metadata:
   namespace: cnp
 spec:
   rules:
-  - host: backend-service.aks-internal.hmcts.net
+  - host: rhubarb-backend.aks-internal.hmcts.net
     http:
       paths:
       - path: /
