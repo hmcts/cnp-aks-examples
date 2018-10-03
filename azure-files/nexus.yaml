@@ -1,0 +1,103 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: nexus
+provisioner: kubernetes.io/azure-file
+mountOptions:
+  - dir_mode=0700
+  - file_mode=0700
+  - uid=200
+  - gid=200
+parameters:
+  skuName: Standard_LRS
+  storageAccount: akssasandbox
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nexus
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-oss
+  namespace: infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus-oss
+  template:
+    metadata:
+      labels:
+        app: nexus-oss
+    spec:
+      containers:
+      - image: sonatype/nexus3
+        name: nexus-oss
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "1000m"
+          limits:
+            memory: "2048Mi"
+            cpu: "2500m"
+        ports:
+        - containerPort: 8081
+          name: http
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: "/nexus-data"
+          name: nexus-data
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus
+---
+#
+# Service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-oss
+  namespace: infra
+  labels:
+    app: nexus-oss
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: nexus-oss
+---
+#
+# Ingress
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nexus-oss
+  namespace: infra
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: nexus.service.core-compute-saat.internal
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: nexus-oss
+          servicePort: 80
+
