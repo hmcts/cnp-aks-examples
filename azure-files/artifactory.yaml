@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifactory-oss
+  namespace: infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: artifactory-oss
+  template:
+    metadata:
+      labels:
+        app: artifactory-oss
+    spec:
+      containers:
+      - image: docker.bintray.io/jfrog/artifactory-oss:latest
+        name: artifactory-oss
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "1000m"
+          limits:
+            memory: "2048Mi"
+            cpu: "2500m"
+        ports:
+        - containerPort: 8081
+          name: http
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: "/var/opt/jfrog/artifactory"
+          name: artifactory-data
+      volumes:
+        - name: artifactory-data
+          persistentVolumeClaim:
+            claimName: azurefile
+---
+#
+# Service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: artifactory-oss
+  namespace: infra
+  labels:
+    app: artifactory-oss
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: artifactory-oss
+---
+#
+# Ingress
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: artifactory-oss
+  namespace: infra
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: artifactory.service.core-compute-saat.internal
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: artifactory-oss
+          servicePort: 80
+
