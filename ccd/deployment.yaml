@@ -16,7 +16,7 @@ metadata:
   name: idam-authentication-web
   namespace: ccd
 data:
-  IDAM_API_URL: 'http://idam-api:8080'
+  IDAM_API_URL: 'http://idam-api'
   IDAM_API_OAUTH2_CLIENT_CLIENT_SECRETS_BULK_SCAN_ORCHESTRATOR: '123456'
   IDAM_API_OAUTH2_CLIENT_CLIENT_SECRETS_CCD_GATEWAY: '123456'
   IDAM_CONTINUE_URL_VALIDATOR_ENFORCE_TLS: 'false'
