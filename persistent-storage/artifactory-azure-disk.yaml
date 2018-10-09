@@ -13,11 +13,12 @@ spec:
       storage: 1000Gi
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: artifactory-oss
   namespace: artifactory
 spec:
+  serviceName: "artifactory"
   replicas: 1
   selector:
     matchLabels:
