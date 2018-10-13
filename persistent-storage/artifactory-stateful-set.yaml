@@ -43,6 +43,16 @@ spec:
         ports:
         - containerPort: 8081
           name: http
+        readinessProbe:
+          httpGet: 
+            port: 8081
+            path: / 
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          successThreshold: 1
+          failureThreshold: 1
+          timeoutSeconds: 1
         imagePullPolicy: Always
         volumeMounts:
         - mountPath: "/var/opt/jfrog/artifactory"
