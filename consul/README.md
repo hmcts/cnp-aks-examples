@@ -1,33 +1,46 @@
 # Consul
-## Notes
-Running with 2nd load balancer (AKS internal) which is routing the UI (for convenience) and DNS.  
+## Overview
+* Consul manifest derived from official Helm chart: https://github.com/helm/charts/tree/master/stable/consul
+* Modifed to expose DNS services on port 53 (UDP) through an additional layer 4 Azure internal loadbalancer on the AKS cluster.
+* Includes Ingress resource to expose UI via Traefik
+* The DNS record for the API/UI `consulhelm.service.core-compute-saat.internal` has been previously added
 
-Issues:
-* Can't get it to work with port 53 for DNS (connection refused), so using default of 8600.
-* Something is ignoring `targetPort` when creating the ILB, so can't seem to use different ports for frontend and backend.
-* Only tried TCP so far for DNS.
-* Query time is slow with TCP:
+## Install on Sandbox AKS cluster
+
+The below instructions are for the Sandbox AKS cluster (`cnp-aks-sandbox-cluster`).
+
 ```
-[adminssh@mgmt-bastion-sandbox test]$ dig +tcp -p 8600 @10.100.84.97 consulhelm.service.consul
+kubectl -f consul.yaml
+```
+The API and UI (via bastion or proxy) will be available at http://consulhelm.service.core-compute-saat.internal
 
-; <<>> DiG 9.9.4-RedHat-9.9.4-61.el7_5.1 <<>> +tcp -p 8600 @10.100.84.97 consulhelm.service.consul
+The IP of the DNS server is `10.100.84.97`
+
+## Register a service (i.e. add a DNS record)
+```
+curl -H "Content-Type: application/json" -X PUT --data "{\"Name\":\"myservice\",\"Service\":\"myservice\",\"Address\":\"10.100.84.90\",\"Port\":80}" http://consulhelm.service.core-compute-saat.internal/v1/agent/service/register
+```
+
+## Confirm Registration
+```
+; <<>> DiG 9.9.4-RedHat-9.9.4-61.el7_5.1 <<>> @10.100.84.97 myservice.service.consul
 ; (1 server found)
 ;; global options: +cmd
 ;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 51671
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42311
 ;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
 ;; WARNING: recursion requested but not available
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
 ;; QUESTION SECTION:
-;consulhelm.service.consul.	IN	A
+;myservice.service.consul.	IN	A
 
 ;; ANSWER SECTION:
-consulhelm.service.consul. 0	IN	A	10.100.84.103
+myservice.service.consul. 0	IN	A	10.100.84.90
 
-;; Query time: 1825 msec
-;; SERVER: 10.100.84.97#8600(10.100.84.97)
-;; WHEN: Thu Oct 11 23:12:24 UTC 2018
-;; MSG SIZE  rcvd: 70
+;; Query time: 1 msec
+;; SERVER: 10.100.84.97#53(10.100.84.97)
+;; WHEN: Sat Oct 13 19:58:26 UTC 2018
+;; MSG SIZE  rcvd: 69
 ```

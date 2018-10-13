@@ -46,10 +46,26 @@ data:
       done
     }
 ---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: consul-api
+#  namespace: consul
+#  annotations:
+#    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+#spec:
+#  type: LoadBalancer
+#  loadBalancerIP: 10.100.84.98
+#  ports:
+#  - name: consul
+#    port: 8500
+#  selector:
+#    component: "consul-consul"
+#---
 apiVersion: v1
 kind: Service
 metadata:
-  name: consul-ilb
+  name: consul-dns
   namespace: consul
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
@@ -57,10 +73,10 @@ spec:
   type: LoadBalancer
   loadBalancerIP: 10.100.84.97
   ports:
-  - name: consul
-    port: 8500
-  - name: dns-tcp
-    port: 8600
+  - name: dns-udp
+    protocol: UDP
+    port: 53
+    targetPort: 53
   selector:
     component: "consul-consul"
 ---
@@ -79,8 +95,8 @@ metadata:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   ports:
-#  - name: http
-#    port: 8500
+  - name: http
+    port: 8500
   - name: rpc
     port: 8400
   - name: serflan-tcp
@@ -98,10 +114,10 @@ spec:
   - name: server
     port: 8300
   - name: consuldns-tcp
-    port: 8600
+    port: 53
   - name: consuldns-udp
     protocol: "UDP"
-    port: 8600
+    port: 53
   clusterIP: None
   selector:
     component: "consul-consul"
@@ -193,10 +209,10 @@ spec:
         - name: server
           containerPort: 8300
         - name: consuldns-tcp
-          containerPort: 8600
+          containerPort: 53
         - name: consuldns-udp
           protocol: "UDP"
-          containerPort: 8600
+          containerPort: 53
         resources:
           {}
           
@@ -214,7 +230,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: DNSPORT
-          value: "8600"
+          value: "53"
         volumeMounts:
         - name: datadir
           mountPath: /var/lib/consul
