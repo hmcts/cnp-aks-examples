@@ -3,7 +3,6 @@
 * Consul manifest derived from official Helm chart: https://github.com/helm/charts/tree/master/stable/consul
 * Modifed to expose DNS services on port 53 (UDP) through an additional layer 4 Azure internal loadbalancer on the AKS cluster.
 * Includes Ingress resource to expose UI via Traefik
-* The DNS record for the API/UI `consulhelm.service.core-compute-saat.internal` has been previously added
 
 ## Install on Sandbox AKS cluster
 
