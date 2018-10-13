@@ -22,6 +22,8 @@ curl -H "Content-Type: application/json" -X PUT --data "{\"Name\":\"myservice\",
 
 ## Confirm Registration
 ```
+[adminssh@mgmt-bastion-sandbox test]$ dig @10.100.84.97 myservice.service.consul
+
 ; <<>> DiG 9.9.4-RedHat-9.9.4-61.el7_5.1 <<>> @10.100.84.97 myservice.service.consul
 ; (1 server found)
 ;; global options: +cmd
