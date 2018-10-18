@@ -1,9 +1,14 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: osba-sb-test
+---
 apiVersion: servicecatalog.k8s.io/v1beta1
 kind: ServiceInstance
 metadata:
   name: servicebus-service-instance
-  namespace: rhubarb
+  namespace: osba-sb-test
 spec:
   clusterServiceClassExternalName: azure-servicebus
   clusterServicePlanExternalName: premium
@@ -15,7 +20,7 @@ apiVersion: servicecatalog.k8s.io/v1beta1
 kind: ServiceBinding
 metadata:
   name: servicebus-binding
-  namespace: rhubarb
+  namespace: osba-sb-test
 spec:
   instanceRef:
     name: servicebus-service-instance

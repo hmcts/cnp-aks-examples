@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: osba-storage-test
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: storage-service-instance
+  namespace: osba-storage-test
+spec:
+  clusterServiceClassExternalName: azure-storage
+  clusterServicePlanExternalName: blob-container
+  parameters:
+    location: 'uksouth'
+    resourceGroup: 'timw-aks-rg'
+---
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: storage-binding
+  namespace: osba-storage-test
+spec:
+  instanceRef:
+    name: storage-service-instance
+  secretName: storage-secret
