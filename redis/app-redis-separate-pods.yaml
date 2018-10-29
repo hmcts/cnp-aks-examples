@@ -118,7 +118,7 @@ spec:
         ports:
         - containerPort: 6379
 #
-# Redis binding
+# Redis service
 #
 ---
 apiVersion: v1
