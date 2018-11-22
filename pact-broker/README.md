@@ -1,5 +1,5 @@
 # Pact Broker
-Intial MVP for Pact Broker running in AKS.
+Initial MVP for Pact Broker running in AKS.
 ---
 ## Links
 https://github.com/DiUS/pact_broker-docker
