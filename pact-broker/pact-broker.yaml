@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pact-broker
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pact-broker-app
+  namespace: pact-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pact-broker-app
+  template:
+    metadata:
+      labels:
+        app: pact-broker-app
+    spec:
+      containers:
+      - image: dius/pact-broker:2.27.5-1
+        name: pact-broker-app
+        env:
+          - name: PACT_BROKER_DATABASE_HOST
+            value: 
+          - name: PACT_BROKER_DATABASE_NAME
+            value: postgres
+          - name: PACT_BROKER_DATABASE_USERNAME
+            value: 
+          - name: PACT_BROKER_DATABASE_PASSWORD
+            value: 
+          - name: PACT_BROKER_DISABLE_SSL_VERIFICATION
+            value: 'true'
+          - name: PACT_BROKER_LOG_LEVEL
+            value: DEBUG
+
+        # These may be adjusted, but be mindful please
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "2500m"
+
+        # This is the port your process is listening on in the container
+        ports:
+        - containerPort: 80
+          name: http
+        imagePullPolicy: Always
+---
+#
+# Service
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: pact-broker-app
+  namespace: pact-broker
+  labels:
+    app: pact-broker-app
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    app: pact-broker-app
+---
+#
+# Ingress
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: pact-broker-app
+  namespace: pact-broker
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: pact-broker.service.core-compute-saat.internal
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: pact-broker-app
+          servicePort: 80
