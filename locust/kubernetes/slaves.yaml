@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-slave
+  namespace: locust
+  labels:
+    app: slave
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: slave
+  template:
+    metadata:
+      labels:
+        app: slave
+    spec:
+      containers:
+      - name: locust-slave
+        image: hmcts/locust-k8s
+        imagePullPolicy: Always
+        env:
+          - name: LOCUST_MODE
+            value: slave
+          - name: LOCUST_MASTER
+            value: locust-master
+          - name: TARGET_HOST
+            value: http://cmc-pdf-service.service.core-compute-aat.internal
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "2000m"
+        ports:
+        - name: web
+          containerPort: 8089
+          protocol: TCP
+        - name: listen-1
+          containerPort: 5557
+          protocol: TCP
+        - name: listen-2
+          containerPort: 5558
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /locust-tasks
+          name: tasks
+      volumes:
+        - name: tasks
+          configMap:
+            name: locust-tasks
+            items:
+            - key: locust-tasks
+              path: locustfile.py
